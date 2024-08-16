@@ -3,4 +3,4 @@ by @harbi telegram
 https://t.me/harbi_store
 
 GUI Version developered by Mustafa ip
-instagram.com/tofa
+https://instagram.com/tofa
