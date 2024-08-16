@@ -1,54 +1,13 @@
-# coding:utf-8
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QTextEdit, QVBoxLayout, QWidget
+import sys
 import hashlib
 import json
 from time import time
 from hashlib import md5
 from copy import deepcopy
-from random import choice
+from random import choice, randint
 import requests
-import hashlib
-import random
 from urllib.parse import quote
-
-# coding:utf-8
-import binascii
-import hashlib
-import json
-from time import time
-from hashlib import md5
-from copy import deepcopy
-from random import choice
-
-
-def hex_string(num):
-    tmp_string = hex(num)[2:]
-    if len(tmp_string) < 2:
-        tmp_string = '0' + tmp_string
-    return tmp_string
-
-
-def RBIT(num):
-    result = ''
-    tmp_string = bin(num)[2:]
-    while len(tmp_string) < 8:
-        tmp_string = '0' + tmp_string
-    for i in range(0, 8):
-        result = result + tmp_string[7 - i]
-    return int(result, 2)
-
-
-def file_data(path):
-    with open(path, 'rb') as f:
-        result = f.read()
-    return result
-
-
-def reverse(num):
-    tmp_string = hex(num)[2:]
-    if len(tmp_string) < 2:
-        tmp_string = '0' + tmp_string
-    return int(tmp_string[1:] + tmp_string[:1], 16)
-
 
 class XG:
     def __init__(self, debug):
@@ -129,37 +88,117 @@ class XG:
 
         return '8404{}{}{}{}{}'.format(hex_string(self.hex_CE0[7]), hex_string(self.hex_CE0[3]),
                                        hex_string(self.hex_CE0[1]), hex_string(self.hex_CE0[6]), result)
+def hex_string(num):
+    tmp_string = hex(num)[2:]
+    if len(tmp_string) < 2:
+        tmp_string = '0' + tmp_string
+    return tmp_string
 
+def RBIT(num):
+    result = ''
+    tmp_string = bin(num)[2:]
+    while len(tmp_string) < 8:
+        tmp_string = '0' + tmp_string
+    for i in range(0, 8):
+        result = result + tmp_string[7 - i]
+    return int(result, 2)
 
-def X_Gorgon(param, data, cookie):
-    gorgon = []
-    ttime = time()
-    Khronos = hex(int(ttime))[2:]
-    url_md5 = md5(bytearray(param, 'utf-8')).hexdigest()
-    for i in range(0, 4):
-        gorgon.append(int(url_md5[2 * i: 2 * i + 2], 16))
-    if data:
-        if isinstance(data, str):
-            data = data.encode(encoding='utf-8')
-        data_md5 = md5(data).hexdigest()
-        for i in range(0, 4):
-            gorgon.append(int(data_md5[2 * i: 2 * i + 2], 16))
-    else:
-        for i in range(0, 4):
-            gorgon.append(0x0)
-    if cookie:
-        cookie_md5 = md5(bytearray(cookie, 'utf-8')).hexdigest()
-        for i in range(0, 4):
-            gorgon.append(int(cookie_md5[2 * i: 2 * i + 2], 16))
-    else:
-        for i in range(0, 4):
-            gorgon.append(0x0)
-    gorgon = gorgon + [0x1, 0x1, 0x2, 0x4]
-    for i in range(0, 4):
-        gorgon.append(int(Khronos[2 * i: 2 * i + 2], 16))
-    return {'X-Gorgon': XG(gorgon).main(), 'X-Khronos': str(int(ttime))}
+def reverse(num):
+    tmp_string = hex(num)[2:]
+    if len(tmp_string) < 2:
+        tmp_string = '0' + tmp_string
+    return int(tmp_string[1:] + tmp_string[:1], 16)
 
-
+class UsernameChangerApp(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        
+        self.setWindowTitle("TikTok Username Changer")
+        self.setGeometry(200, 200, 500, 300)
+        self.session_label = QLabel("Enter session ID:", self)
+        self.session_input = QLineEdit(self)
+        self.session_input.textChanged.connect(self.auto_check_username)
+        self.current_username_label = QLabel("Current Username:", self)
+        self.current_username_display = QTextEdit(self)
+        self.current_username_display.setReadOnly(True)
+        self.new_username_label = QLabel("Enter New Username:", self)
+        self.new_username_input = QLineEdit(self)
+        self.change_button = QPushButton("Change Username", self)
+        self.change_button.clicked.connect(self.change_username)
+        self.result_display = QTextEdit(self)
+        self.result_display.setReadOnly(True)
+        layout = QVBoxLayout()
+        layout.addWidget(self.session_label)
+        layout.addWidget(self.session_input)
+        layout.addWidget(self.current_username_label)
+        layout.addWidget(self.current_username_display)
+        layout.addWidget(self.new_username_label)
+        layout.addWidget(self.new_username_input)
+        layout.addWidget(self.change_button)
+        layout.addWidget(self.result_display)
+        container = QWidget()
+        container.setLayout(layout)
+        
+        self.setCentralWidget(container)
+    
+    def auto_check_username(self):
+        session_id = self.session_input.text()
+        if session_id:
+            device_id = str(randint(777777788, 999999999999))
+            iid = str(randint(777777788, 999999999999))
+            
+            last_username = self.get_profile(session_id, device_id, iid)
+            if last_username != "None":
+                self.current_username_display.setText(f"Your current TikTok username is: {last_username}")
+            else:
+                self.current_username_display.setText("Invalid session ID or other error.")
+    
+    def change_username(self):
+        session_id = self.session_input.text()
+        device_id = str(randint(777777788, 999999999999))
+        iid = str(randint(777777788, 999999999999))
+        last_username = self.get_profile(session_id, device_id, iid)
+        if last_username != "None":
+            self.current_username_display.setText(f"Your current TikTok username is: {last_username}")
+            new_username = self.new_username_input.text()
+            result = self.attempt_change_username(session_id, device_id, iid, last_username, new_username)
+            self.result_display.setText(result)
+        else:
+            self.result_display.setText("Invalid session ID or other error.")
+    
+    def get_profile(self, session_id, device_id, iid):
+        try:
+            url = f"https://api.tiktokv.com/passport/account/info/v2/?id=kaa&version_code=34.0.0&language=en&app_name=lite&app_version=34.0.0&carrier_region=SA&device_id={device_id}&tz_offset=10800&mcc_mnc=42001&locale=en&sys_region=SA&aid=473824&screen_width=1284&os_api=18&ac=WIFI&os_version=17.3&app_language=en&tz_name=Asia/Riyadh&carrier_region1=SA&build_number=340002&device_platform=iphone&iid={iid}&device_type=iPhone13,4"
+            headers = {
+                "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "Cookie": f"sessionid={session_id}",
+                "sdk-version": "2",
+                "user-agent": "com.zhiliaoapp.musically/432424234 (Linux; U; Android 5; en; fewfwdw; Build/PI;tt-ok/3.12.13.1)",
+            }
+            response = requests.get(url, headers=headers, cookies={"sessionid": session_id})
+            return response.json()["data"]["username"]
+        except Exception as e:
+            return "None"
+    def attempt_change_username(self, session_id, device_id, iid, last_username, new_username):
+        data = f"aid=364225&unique_id={quote(new_username)}"
+        parm = f"aid=364225&residence=&device_id={device_id}&version_name=1.1.0&os_version=17.4.1&iid={iid}&app_name=tiktok_snail&locale=en&ac=4G&sys_region=SA&version_code=1.1.0&channel=App%20Store&op_region=SA&os_api=18&device_brand=iPad&idfv=16045E07-1ED5-4350-9318-77A1469C0B89&device_platform=iPad&device_type=iPad13,4&carrier_region1=&tz_name=Asia/Riyadh&account_region=sa&build_number=11005&tz_offset=10800&app_language=en&carrier_region=&current_region=&aid=364225&mcc_mnc=&screen_width=1284&uoo=1&content_language=&language=en&cdid=B75649A607DA449D8FF2ADE97E0BC3F1&openudid=7b053588b18d61b89c891592139b68d918b44933&app_version=1.1.0"
+        sig = run(parm, md5(data.encode("utf-8")).hexdigest() if data else None, None)
+        url = f"https://api.tiktokv.com/aweme/v1/commit/user/?{parm}"
+        headers = {
+            "Connection": "keep-alive",
+            "User-Agent": "Whee 1.1.0 rv:11005 (iPad; iOS 17.4.1; en_SA@calendar=gregorian) Cronet",
+            "Cookie": f"sessionid={session_id}",
+        }
+        headers.update(sig)
+        response = requests.post(url, data=data, headers=headers)
+        result = response.text
+        if "unique_id" in result:
+            if self.get_profile(session_id, device_id, iid) != last_username:
+                return "Username change successful."
+            else:
+                return "Failed to change username: " + str(result)
+        else:
+            return "Failed to change username: " + str(result)
 def run(param="", stub="", cookie=""):
     gorgon = []
     ttime = time()
@@ -185,93 +224,8 @@ def run(param="", stub="", cookie=""):
     for i in range(0, 4):
         gorgon.append(int(Khronos[2 * i: 2 * i + 2], 16))
     return {'X-Gorgon': XG(gorgon).main(), 'X-Khronos': str(int(ttime))}
-
-
-def get_stub(data):
-    if isinstance(data, dict):
-        data = json.dumps(data)
-
-    if isinstance(data, str):
-        data = data.encode(encoding='utf-8')
-    if data == None or data == "" or len(data) == 0:
-        return "00000000000000000000000000000000"
-
-    m = hashlib.md5()
-    m.update(data)
-    res = m.hexdigest()
-    res = res.upper()
-    return res
-
-
-def get_profile(session_id, device_id, iid):
-    """Retrieve the current TikTok username for a given session, device, and iid."""
-    try:
-        
-        url = f"https://api.tiktokv.com/passport/account/info/v2/?id=kaa&version_code=34.0.0&language=en&app_name=lite&app_version=34.0.0&carrier_region=SA&device_id=7256623439258404357&tz_offset=10800&mcc_mnc=42001&locale=en&sys_region=SA&aid=473824&screen_width=1284&os_api=18&ac=WIFI&os_version=17.3&app_language=en&tz_name=Asia/Riyadh&carrier_region1=SA&build_number=340002&device_platform=iphone&iid=7353686754157692689&device_type=iPhone13,4"
-        headers = {
-            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "Cookie": f"sessionid={session_id}",
-            "sdk-version": "2",
-            "user-agent": "com.zhiliaoapp.musically/432424234 (Linux; U; Android 5; en; fewfwdw; Build/PI;tt-ok/3.12.13.1)",
-  
-        }
-        
-        response = requests.get(url, headers=headers, cookies={"sessionid": session_id})
-        return response.json()["data"]["username"]
-    except Exception as e:
-        return "None"
-
-
-def check_is_changed(last_username, session_id, device_id, iid):
-    """Check if the username has been changed in the TikTok profile."""
-    return get_profile(session_id, device_id, iid) != last_username
-
-
-def change_username(session_id, device_id, iid, last_username, new_username):
-    """Attempt to change a TikTok username."""
-    data = f"aid=364225&unique_id={quote(new_username)}"
-    parm = f"aid=364225&residence=&device_id={device_id}&version_name=1.1.0&os_version=17.4.1&iid={iid}&app_name=tiktok_snail&locale=en&ac=4G&sys_region=SA&version_code=1.1.0&channel=App%20Store&op_region=SA&os_api=18&device_brand=iPad&idfv=16045E07-1ED5-4350-9318-77A1469C0B89&device_platform=iPad&device_type=iPad13,4&carrier_region1=&tz_name=Asia/Riyadh&account_region=sa&build_number=11005&tz_offset=10800&app_language=en&carrier_region=&current_region=&aid=364225&mcc_mnc=&screen_width=1284&uoo=1&content_language=&language=en&cdid=B75649A607DA449D8FF2ADE97E0BC3F1&openudid=7b053588b18d61b89c891592139b68d918b44933&app_version=1.1.0"
-    
-        
-    sig = run(parm, md5(data.encode("utf-8")).hexdigest() if data else None,None)  
-    url = f"https://api.tiktokv.com/aweme/v1/commit/user/?{parm}"
-    headers = {
-        "Connection": "keep-alive",
-        "User-Agent": "Whee 1.1.0 rv:11005 (iPad; iOS 17.4.1; en_SA@calendar=gregorian) Cronet",
-
-
-        "Cookie": f"sessionid={session_id}",
-    }
-    headers.update(sig)
-    response = requests.post(url, data=data, headers=headers)
-    result = response.text
-    if "unique_id" in result :
-        if(check_is_changed(last_username, session_id, device_id, iid)):
-            return "Username change successful."
-        else:
-            return "Failed to change username: " + str(result)
-    else:
-        return "Failed to change username: " + str(result)
-
-
-def main():
-    """Main function to handle user interaction and username change."""
-    device_id = str(random.randint(777777788, 999999999999))
-    iid = str(random.randint(777777788, 999999999999))
-
-    session_id = input("Enter session ID: ")
-
-    last_username = get_profile(session_id, device_id, iid)
-    if last_username != "None": #ء 
-        print(f"Your current TikTok username is: {last_username}")
-        new_username = input("Enter the new username you wish to set: ")
-        print(change_username(session_id, device_id, iid,last_username, new_username))
-
-    else:
-        print("Invalid session ID or other error.")
-    print("telegram @harbi")
-    # telegram @harbi
-
-
 if __name__ == "__main__":
-    main()
+    app = QApplication(sys.argv)
+    window = UsernameChangerApp()
+    window.show()
+    sys.exit(app.exec_())
